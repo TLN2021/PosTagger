@@ -23,9 +23,10 @@ def findingAllPos(file):
     file.seek(0) #usiamo la funzione per settare nuovamente il puntatore al file all'inizio
     lines = file.readlines()
     for line in lines:
-        if 'text' in line:
+        wordsInLine = line.split()
+        if 'text' in wordsInLine:
             for p in pos:
-                if(p in line):
+                if p in line:
                     pos.remove(p)
     return pos
 
@@ -35,8 +36,9 @@ def findingTransitionMatrix(file, pos):
     previousPosIndex = -1
     
     file.seek(0) #usiamo la funzione per settare nuovamente il puntatore al file all'inizio
-    lines = file.readlines()
+    lines = file.readlines();
     for line in lines:
+        wordsInLine = line.split()
         # i seguenti due controlli servono per capire quando analizzare il corpus per il pos
         # Se la riga incomincia con '#' significa che è iniziato il corpus successivo 
         # e c'è bisogno di resettare il tag precedente
@@ -46,9 +48,9 @@ def findingTransitionMatrix(file, pos):
             analyze = False
             previousPosIndex = -1
         # analizziamo la riga e segnamo l'occorrenza del pos
-        if(analyze is True):
+        if analyze is True:
             for index,p in enumerate(pos):
-                if(p in line):
+                if p in wordsInLine:
                     # controlliamo che stiamo analizzando una nuova frase
                     if(previousPosIndex >= 0):
                         # aggiorniamo la matrice del conteggio della transizione
@@ -56,9 +58,9 @@ def findingTransitionMatrix(file, pos):
                     #aggiorniamo il conteggio per il pos corrente e ci salviamo l'indece per l'iterata successiva
                     countPos[index] += 1 
                     previousPosIndex = index
+    #print(transitionMatrix)
+    print(pos)
     print(countPos)
-    print(transitionMatrix)
-                    
             
 
 #-------------------------------------------------------
