@@ -59,8 +59,23 @@ def findingTransitionMatrix(file, pos):
                     countPos[index] += 1 
                     previousPosIndex = index
     #print(transitionMatrix)
-    print(pos)
-    print(countPos)
+
+    print(pos) # stampa la lista di pos che compaiono nel treebank
+    print(countPos)  # stampa le occorrenze di ogni pos nel treebank
+    # stampa la somma delle volte in cui ogni pos precede gli altri
+    # (dovrebbe risultare somma <= occorrenze del pos )
+    for row in transitionMatrix:
+        print(np.sum(row)) # somma tutti i valori nella riga
+    print(np.sum(transitionMatrix[len(transitionMatrix)-1])) # somma dei valori nell'ultima riga della matrice
+
+    # calcola la probabilità facendo conteggio_coppia/conteggio_tag_precedente
+    # nota : le 2 righe successive sono equivalenti
+    #transitionMatrix = transitionMatrix / countPos[:, None]
+    transitionMatrix = transitionMatrix / countPos.reshape(-1,1)
+    print(transitionMatrix)
+    for row in transitionMatrix:
+        print(np.sum(row))
+
             
 
 #-------------------------------------------------------
