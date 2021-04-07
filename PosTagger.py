@@ -127,8 +127,8 @@ def viterbiAlgorithm(sentence, pos, transitionProbabilityMatrix, emissionProbabi
 #sentence = 'et duas inter nos cartulas Lopo notarium scribere rogavimus.'
 sentence = 'ζῶσι δὲ καὶ οὗτοι τὸν αὐτὸν τρόπον τοῖς θρεψαμένοις, πότους τὰ πολλὰ ποιούμενοι καὶ πλησιάζοντες ταῖς γυναιξὶν ἁπάσαις.'
 #fileName = 'TreeBank - Latino/la_llct-ud-train.conllu'
-fileName = 'TreeBank - Greco/grc_perseus-ud-train.conllu'
-with open(fileName,'w',encoding='utf-8') as file:
+fileName = 'TreeBank - Greco/grc_perseus-ud-test.conllu'
+with open(fileName,'r',encoding='utf-8') as file:
     pos = findingAllPos(file)
     #print(pos) # stampa la lista di pos che compaiono nel treebank
     transitionProbabilityMatrix, emissionProbabilityDictionary = learningPhase(file, pos)
