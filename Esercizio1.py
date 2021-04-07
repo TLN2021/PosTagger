@@ -91,6 +91,7 @@ def tokenizeSentence(sentence):
             sentence = sentence.replace(char, ' ' + char)
     return sentence.split()
             
+# codifica dello pseudocodice dell'algoritmo di Viterbi
 def viterbiAlgorithm(sentence, pos, transitionProbabilityMatrix, emissionProbabilityDictionary):
     sentenceList = tokenizeSentence(sentence)
         
@@ -98,34 +99,25 @@ def viterbiAlgorithm(sentence, pos, transitionProbabilityMatrix, emissionProbabi
     backpointer = np.zeros((len(pos), len(sentenceList)))
     for index,p in enumerate(pos):
         viterbi[index, 0] = transitionProbabilityMatrix[0, index] * emissionProbabilityDictionary[sentenceList[0]][index]
-        #backpointer[index, 0] = 0 #assegnazione superflua in quanto fatta con l'inizializzazione
-    for t,word in enumerate(sentenceList[1::]):
+    for t,word in enumerate(sentenceList):
         for s,p in enumerate(pos):
             viterbi[s, t] = np.max(viterbi[:, t-1] * transitionProbabilityMatrix[:, s] * emissionProbabilityDictionary[sentenceList[t]][s])
             backpointer[s, t] = np.argmax(viterbi[:, t-1] * transitionProbabilityMatrix[:, s])
-    viterbi[len(pos)-1, len(sentenceList)-1] = np.max(viterbi[:, len(sentenceList)-1] * transitionProbabilityMatrix[:, len(pos)-1])
-    backpointer[len(pos)-1, len(sentenceList)-1] = np.argmax(viterbi[:, len(sentenceList)-1] * transitionProbabilityMatrix[:, len(pos)-1])
-    
-    #print(viterbi)
-    #print(backpointer)
-    
+    # calcolo del percorso migliore usando il backpointer
     best_path = np.zeros(len(sentenceList))
-    for index, c in enumerate(viterbi.T):
-        best_path[index] = backpointer[np.argmax(viterbi[:, index])][index]
+    best_path[len(sentenceList)-1] =  viterbi[:,-1].argmax() # last state
+    for t in range(len(sentenceList)-1,0,-1): # states of (last-1)th to 0th time step
+        best_path[t-1] = backpointer[int(best_path[t]),t]
+    # matching della parola con il tag corrispondente
+    for index,p in enumerate(sentenceList):
+       print(sentenceList[index], pos[int(best_path[index])])
         
-    for index,p in enumerate(pos):
-        print(sentenceList[index], pos[int(best_path[index+1%len(pos)])])
-        
-    #print(best_path)
-        
-
 
 #-------------------------------------------------------
-sentence = '+ Ego Andreas notarius, rogatus a Teuperto diacono, me teste subscripsi.'
+sentence = 'et duas inter nos cartulas Lopo notarium scribere rogavimus'
 fileName = 'la_llct-ud-train.conllu'
 with open(fileName) as file:
     pos = findingAllPos(file)
     #print(pos) # stampa la lista di pos che compaiono nel treebank
     transitionProbabilityMatrix, emissionProbabilityDictionary = learningPhase(file, pos)
     viterbiAlgorithm(sentence, pos, transitionProbabilityMatrix, emissionProbabilityDictionary)
-    print(pos)
