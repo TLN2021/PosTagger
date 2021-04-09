@@ -167,12 +167,12 @@ def main(lingua):
     # trovo per 
     sentenceTest, correctPos = getSencencePos(testSetFile)
 
-    # 1) LEARNING
+    # 1) LEARNING (sul training set)
     with open(train_set_file, 'r', encoding='utf-8') as trainFile:
         posInTrain = findingAllPos(trainFile)
         transitionProbabilityMatrix, emissionProbabilityDictionary = learningPhase(trainFile, posInTrain)
 
-    # 2) DECODING
+    # 2) DECODING (sul test set)
     viterbiPos = []
     for sentence in sentenceTest:
         viterbiPos.append(viterbiAlgorithm(sentence, posInTrain, transitionProbabilityMatrix, emissionProbabilityDictionary))
