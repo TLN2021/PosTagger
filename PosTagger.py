@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 
-#troviamo tutti i pos del treebank
+#restituisce tutti i pos del treebank
 def findingAllPos(file):
     pos = []
     file.seek(0) #usiamo la funzione per settare nuovamente il puntatore al file all'inizio
@@ -15,12 +15,11 @@ def findingAllPos(file):
             analyze = True
         if line.startswith('#'):
             analyze = False
-        # analizziamo la riga e segnamo l'occorrenza del pos
+        # analizziamo la riga e segniamo l'occorrenza del pos
         if analyze is True:
             if(wordsInLine != []):
                 if(wordsInLine[3] not in pos):
                     pos.append(wordsInLine[3])
-                    
     return pos
 
 def learningPhase(file, pos):
@@ -95,7 +94,7 @@ def matrixToLogMatrix(matrix):
 def dictToLogDict(dictionary):
     tiny=np.finfo(0.).tiny #il più piccolo valore del compilatore py
     newDict={}
-    for key in emissionProbabilityDictionary.keys():
+    for key in dictionary.keys():
         newDict[key] = np.log(dictionary[key]+tiny)
     return newDict
             
@@ -114,22 +113,79 @@ def viterbiAlgorithm(sentence, pos, transitionProbabilityMatrix, emissionProbabi
         for s,p in enumerate(pos):
             viterbi[s, t] = np.max(viterbi[:, t-1] + logTPM[:, s] + logEPD[sentenceList[t]][s])
             backpointer[s, t] = np.argmax(viterbi[:, t-1] + logTPM[:, s])
+
     # calcolo del percorso migliore usando il backpointer
     best_path = np.zeros(len(sentenceList))
     best_path[len(sentenceList)-1] =  viterbi[:,-1].argmax() # last state
     for t in range(len(sentenceList)-1,0,-1): # states of (last-1)th to 0th time step
         best_path[t-1] = backpointer[int(best_path[t]),t]
-    # matching della parola con il tag corrispondente
+    # stampa della parola con il tag corrispondente
     for index,p in enumerate(sentenceList):
-       print(sentenceList[index], pos[int(best_path[index])])        
+       print(sentenceList[index], pos[int(best_path[index])])
+
+    return best_path
+
+
+# ritorna le frasi nel treebank ed i relativi pos
+def get_sentences_pos(fileName):
+    with open(fileName, 'r', encoding='utf-8') as file:
+        analyze= False
+        lines = file.readlines();
+        sentence_index=-1
+        sentences=[]
+        pos={}
+        for line in lines:
+            wordsInLine = line.split()
+            if line.startswith('#') or wordsInLine == [] :
+                analyze = False
+            if 'text' in line :  # inizio di una nuova frase
+                sentence_index += 1
+                sentences.append(line.replace('# text = ','').replace('\n','')) # salva la frase
+                pos[sentence_index]=[] # inizializza l'array per i pos della frase
+            if line.startswith('1'): # si devono salvare i pos della frase
+                analyze = True
+
+            if analyze is True:
+                pos[sentence_index].append(wordsInLine[3])
+    return sentences , pos
+
+
+def accuracy (desiderato,ottenuto):
+    accuracy=0
+    return accuracy
+
+
+def main(lingua):
+
+    if lingua=="Latino":
+        train_set_file = 'TreeBank - Latino/la_llct-ud-train.conllu'
+        test_set_file = 'TreeBank - Latino/la_llct-ud-test.conllu'
+
+    if lingua=="Greco":
+        train_set_file = 'TreeBank - Greco/grc_perseus-ud-train.conllu'
+        test_set_file = 'TreeBank - Greco/grc_perseus-ud-test.conllu'
+
+    sentences_test, pos_desiderati = get_sentences_pos(test_set_file)
+
+    # fase di learning sul training set
+    with open(train_set_file, 'r', encoding='utf-8') as train_file:
+        pos_in_train = findingAllPos(train_file)
+        transitionProbabilityMatrix, emissionProbabilityDictionary = learningPhase(train_file, pos_in_train)
+
+    # run dell'algoritmo di Viterbi sul test set per valutarne le performance
+    pos_ottenuti = []
+    for sentence in sentences_test:
+        pos_ottenuti.append(viterbiAlgorithm(sentence, pos_in_train, transitionProbabilityMatrix, emissionProbabilityDictionary))
+
+    accuracy_on_test = accuracy(pos_desiderati,pos_ottenuti)
+
+
 
 #-------------------------------------------------------
-#sentence = 'et duas inter nos cartulas Lopo notarium scribere rogavimus.'
-sentence = 'ζῶσι δὲ καὶ οὗτοι τὸν αὐτὸν τρόπον τοῖς θρεψαμένοις, πότους τὰ πολλὰ ποιούμενοι καὶ πλησιάζοντες ταῖς γυναιξὶν ἁπάσαις.'
-#fileName = 'TreeBank - Latino/la_llct-ud-train.conllu'
-fileName = 'TreeBank - Greco/grc_perseus-ud-test.conllu'
-with open(fileName,'r',encoding='utf-8') as file:
-    pos = findingAllPos(file)
-    #print(pos) # stampa la lista di pos che compaiono nel treebank
-    transitionProbabilityMatrix, emissionProbabilityDictionary = learningPhase(file, pos)
-    viterbiAlgorithm(sentence, pos, transitionProbabilityMatrix, emissionProbabilityDictionary)
+
+lingua= "Latino"
+#lingua="Greco"
+main(lingua)
+
+
+
