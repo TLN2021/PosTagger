@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 
-#restituisce tutti i pos del treebank
+# restituisce tutti i pos del treebank
 def findingAllPos(file):
     pos = []
     file.seek(0) #usiamo la funzione per settare nuovamente il puntatore al file all'inizio
@@ -13,7 +13,7 @@ def findingAllPos(file):
         # e c'è bisogno di resettare il tag precedente
         if line.startswith('1'):
             analyze = True
-        if line.startswith('#'):
+        elif line.startswith('#'):
             analyze = False
         # analizziamo la riga e segniamo l'occorrenza del pos
         if analyze is True:
@@ -37,7 +37,7 @@ def learningPhase(file, pos):
         # e c'è bisogno di resettare il tag precedente
         if line.startswith('1'):
             analyze = True
-        if line.startswith('#'):
+        elif line.startswith('#'):
             analyze = False
             previousPosIndex = -1
         # analizziamo la riga e segnamo l'occorrenza del pos
@@ -90,7 +90,7 @@ def matrixToLogMatrix(matrix):
     tiny=np.finfo(0.).tiny #il più piccolo valore del compilatore py
     return np.log(matrix + tiny)
 
-# restituisce un dizionario i cui valori associati alle chiavi sono converitti in log
+# restituisce un dizionario i cui valori associati alle chiavi sono convertiti in log
 def dictToLogDict(dictionary):
     tiny=np.finfo(0.).tiny #il più piccolo valore del compilatore py
     newDict={}
@@ -115,39 +115,39 @@ def viterbiAlgorithm(sentence, pos, transitionProbabilityMatrix, emissionProbabi
             backpointer[s, t] = np.argmax(viterbi[:, t-1] + logTPM[:, s])
 
     # calcolo del percorso migliore usando il backpointer
-    best_path = np.zeros(len(sentenceList))
-    best_path[len(sentenceList)-1] =  viterbi[:,-1].argmax() # last state
-    for t in range(len(sentenceList)-1,0,-1): # states of (last-1)th to 0th time step
-        best_path[t-1] = backpointer[int(best_path[t]),t]
+    bestPath = np.zeros(len(sentenceList))
+    bestPath[len(sentenceList) - 1] =  viterbi[:, -1].argmax() # last state
+    for t in range(len(sentenceList)-1, 0, -1): # states of (last-1)th to 0th time step
+        bestPath[t-1] = backpointer[int(bestPath[t]),t]
     # stampa della parola con il tag corrispondente
     for index,p in enumerate(sentenceList):
-       print(sentenceList[index], pos[int(best_path[index])])
+       print(sentenceList[index], pos[int(bestPath[index])])
 
-    return best_path
+    return bestPath
 
 
-# ritorna le frasi nel treebank ed i relativi pos
-def get_sentences_pos(fileName):
+# restituisce le frasi nel treebank ed i relativi pos
+def getSencencePos(fileName):
     with open(fileName, 'r', encoding='utf-8') as file:
         analyze= False
         lines = file.readlines();
-        sentence_index=-1
+        sentenceIndex=-1 # indice che conta le frasi nel testo
         sentences=[]
         pos={}
         for line in lines:
             wordsInLine = line.split()
             if line.startswith('#') or wordsInLine == [] :
                 analyze = False
-            if 'text' in line :  # inizio di una nuova frase
-                sentence_index += 1
-                sentences.append(line.replace('# text = ','').replace('\n','')) # salva la frase
-                pos[sentence_index]=[] # inizializza l'array per i pos della frase
-            if line.startswith('1'): # si devono salvare i pos della frase
+            elif line.startswith('1'): # si devono salvare i pos della frase
                 analyze = True
-
+            if 'text' in line :  # inizio di una nuova frase
+                sentenceIndex += 1
+                sentences.append(line.replace('# text = ','').replace('\n','')) # salva la frase
+                pos[sentenceIndex]=[] # inizializza l'array per i pos della frase
             if analyze is True:
-                pos[sentence_index].append(wordsInLine[3])
-    return sentences , pos
+                pos[sentenceIndex].append(wordsInLine[3])
+            
+    return sentences , pos.values()
 
 
 def accuracy (desiderato,ottenuto):
@@ -156,29 +156,29 @@ def accuracy (desiderato,ottenuto):
 
 
 def main(lingua):
-
-    if lingua=="Latino":
+            
+    if lingua == "Latino":
         train_set_file = 'TreeBank - Latino/la_llct-ud-train.conllu'
-        test_set_file = 'TreeBank - Latino/la_llct-ud-test.conllu'
-
-    if lingua=="Greco":
+        testSetFile = 'TreeBank - Latino/la_llct-ud-test.conllu'
+    elif lingua == "Greco":
         train_set_file = 'TreeBank - Greco/grc_perseus-ud-train.conllu'
-        test_set_file = 'TreeBank - Greco/grc_perseus-ud-test.conllu'
+        testSetFile = 'TreeBank - Greco/grc_perseus-ud-test.conllu'
 
-    sentences_test, pos_desiderati = get_sentences_pos(test_set_file)
+    # trovo per 
+    sentenceTest, correctPos = getSencencePos(testSetFile)
 
-    # fase di learning sul training set
-    with open(train_set_file, 'r', encoding='utf-8') as train_file:
-        pos_in_train = findingAllPos(train_file)
-        transitionProbabilityMatrix, emissionProbabilityDictionary = learningPhase(train_file, pos_in_train)
+    # 1) LEARNING
+    with open(train_set_file, 'r', encoding='utf-8') as trainFile:
+        posInTrain = findingAllPos(trainFile)
+        transitionProbabilityMatrix, emissionProbabilityDictionary = learningPhase(trainFile, posInTrain)
 
-    # run dell'algoritmo di Viterbi sul test set per valutarne le performance
-    pos_ottenuti = []
-    for sentence in sentences_test:
-        pos_ottenuti.append(viterbiAlgorithm(sentence, pos_in_train, transitionProbabilityMatrix, emissionProbabilityDictionary))
-
-    accuracy_on_test = accuracy(pos_desiderati,pos_ottenuti)
-
+    # 2) DECODING
+    viterbiPos = []
+    for sentence in sentenceTest:
+        viterbiPos.append(viterbiAlgorithm(sentence, posInTrain, transitionProbabilityMatrix, emissionProbabilityDictionary))
+        
+    accuracyOnTest = accuracy(correctPos, viterbiPos)
+    print(accuracyOnTest)
 
 
 #-------------------------------------------------------
