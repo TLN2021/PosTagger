@@ -9,7 +9,7 @@ def learningPhase(file, pos):
     emissionProbabilityDictionary = {}
 
     file.seek(0)  # usiamo la funzione per settare nuovamente il puntatore al file all'inizio
-    lines = file.readlines();
+    lines = file.readlines()
     for line in lines:
         wordsInLine = line.split()
         # i seguenti due controlli servono per capire quando analizzare il corpus per il pos
