@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+from sklearn.metrics import accuracy_score
 
 # restituisce tutti i pos del treebank
 def findingAllPos(file):
@@ -76,10 +77,10 @@ def learningPhase(file, pos):
     for key in emissionProbabilityDictionary.keys():
         emissionProbabilityDictionary[key] /= countPos 
         
-    return transitionProbabilityMatrix, emissionProbabilityDictionary
+    return transitionProbabilityMatrix, emissionProbabilityDictionary, countPos
 
 def tokenizeSentence(sentence):
-    punctuations = '''!()-[]{};:'"\,<>./?@#$%^&*_~'''
+    punctuations = '''!(){};:'"\,<>./?@#$%^&*_~'''
     for char in sentence:
         if char in punctuations:
             sentence = sentence.replace(char, ' ' + char)
@@ -97,33 +98,94 @@ def dictToLogDict(dictionary):
     for key in dictionary.keys():
         newDict[key] = np.log(dictionary[key]+tiny)
     return newDict
-            
+
+def statisticsOnDevSet(fileName, pos):
+    with open(fileName, 'r', encoding='utf-8') as file:
+        lines = file.readlines();
+        words={}
+        deletedWords=[]
+        statistics = np.zeros(len(pos))
+        for line in lines:
+            wordsInLine = line.split()
+            # i seguenti due controlli servono per capire quando analizzare il corpus per il pos
+            # Se la riga incomincia con '#' significa che è iniziato il corpus successivo
+            # e c'è bisogno di resettare il tag precedente
+            if line.startswith('1'):
+                analyze = True
+            elif line.startswith('#'):
+                analyze = False
+            # analizziamo la riga e segniamo l'occorrenza del pos
+            if analyze is True:
+                if (wordsInLine != []):
+                    w=wordsInLine[1]
+                    if w not in words.keys() and w not in deletedWords:
+                        words[w]=wordsInLine[3]
+                    elif w in words.keys():
+                        words.pop(w,None)
+                        deletedWords.append(w)
+
+        for index,p in enumerate(pos):
+            statistics[index] = list(words.values()).count(p)
+
+        return statistics/len(words.keys())
+
+
+def smoothing(pos, type, devFileName) :
+    smoothingVector=np.zeros(len(pos))
+    if type == 0:
+        for index,p in enumerate(pos) :
+            if p=="NOUN":
+                smoothingVector[index]=1
+    elif type == 1:
+        for index, p in enumerate(pos):
+            if p == "NOUN" or p == "VERB":
+                smoothingVector[index] = 0.5
+    elif type == 2:
+        smoothingVector = np.ones(len(pos))*(1/len(pos))
+    elif type == 3:
+        smoothingVector = statisticsOnDevSet(devFileName, pos)
+    return smoothingVector
+
+
 # codifica dello pseudocodice dell'algoritmo di Viterbi
-def viterbiAlgorithm(sentence, pos, transitionProbabilityMatrix, emissionProbabilityDictionary):
+def viterbiAlgorithm(sentence, pos, transitionProbabilityMatrix, emissionProbabilityDictionary, smoothingVector):
     sentenceList = tokenizeSentence(sentence)
     # convertiamo i valori delle strutture create in precedenza coi log
     logTPM = matrixToLogMatrix(transitionProbabilityMatrix)
     logEPD = dictToLogDict(emissionProbabilityDictionary)
-        
+    logSV = matrixToLogMatrix(smoothingVector)
+
     viterbi = np.ones((len(pos), len(sentenceList)))
     backpointer = np.zeros((len(pos), len(sentenceList)))
     for index,p in enumerate(pos):
-        viterbi[index, 0] = logTPM[0, index] + logEPD[sentenceList[0]][index]
+        if sentenceList[0] in emissionProbabilityDictionary.keys():
+            viterbi[index, 0] = logTPM[0, index] + logEPD[sentenceList[0]][index]
+        else:
+            viterbi[index, 0] = logTPM[0, index] + logSV[index]
     for t,word in enumerate(sentenceList):
         for s,p in enumerate(pos):
-            viterbi[s, t] = np.max(viterbi[:, t-1] + logTPM[:, s] + logEPD[sentenceList[t]][s])
-            backpointer[s, t] = np.argmax(viterbi[:, t-1] + logTPM[:, s])
+            if word in emissionProbabilityDictionary.keys():
+                viterbi[s, t] = np.max(viterbi[:, t-1] + logTPM[:, s] + logEPD[sentenceList[t]][s])
+            else:
+                viterbi[s, t] = np.max(viterbi[:, t - 1] + logTPM[:, s] + logSV[s])
+
+            backpointer[s, t] = np.argmax(viterbi[:, t - 1] + logTPM[:, s])
 
     # calcolo del percorso migliore usando il backpointer
     bestPath = np.zeros(len(sentenceList))
     bestPath[len(sentenceList) - 1] =  viterbi[:, -1].argmax() # last state
     for t in range(len(sentenceList)-1, 0, -1): # states of (last-1)th to 0th time step
         bestPath[t-1] = backpointer[int(bestPath[t]),t]
-    # stampa della parola con il tag corrispondente
-    for index,p in enumerate(sentenceList):
-       print(sentenceList[index], pos[int(bestPath[index])])
 
-    return bestPath
+    bestPos = []
+    for bp in bestPath:
+        bestPos.append(pos[int(bp)])
+    # stampa della parola con il tag corrispondente
+    #for index,w in enumerate(sentenceList):
+        #if w in temp:
+           # print(sentenceList[index], pos[int(bestPath[index])])
+
+    return bestPos
 
 
 # restituisce le frasi nel treebank ed i relativi pos
@@ -147,22 +209,28 @@ def getSencencePos(fileName):
             if analyze is True:
                 pos[sentenceIndex].append(wordsInLine[3])
             
-    return sentences , pos.values()
+    return sentences , list(pos.values())
 
 
-def accuracy (desiderato,ottenuto):
-    accuracy=0
-    return accuracy
+def accuracy (target,target_test):
+    accuracy=[]
+    for index in range(len(target)):
+        #print("target",target[index])
+       # print("test",target_test[index])
+        accuracy.append(accuracy_score(target[index], target_test[index]))
+    return np.mean(accuracy)
 
 
-def main(lingua):
+def main(language):
             
-    if lingua == "Latino":
+    if language == "Latino":
         train_set_file = 'TreeBank - Latino/la_llct-ud-train.conllu'
         testSetFile = 'TreeBank - Latino/la_llct-ud-test.conllu'
-    elif lingua == "Greco":
+        devSetFile = 'TreeBank - Latino/la_llct-ud-dev.conllu'
+    elif language== "Greco":
         train_set_file = 'TreeBank - Greco/grc_perseus-ud-train.conllu'
         testSetFile = 'TreeBank - Greco/grc_perseus-ud-test.conllu'
+
 
     # trovo per 
     sentenceTest, correctPos = getSencencePos(testSetFile)
@@ -172,10 +240,14 @@ def main(lingua):
         posInTrain = findingAllPos(trainFile)
         transitionProbabilityMatrix, emissionProbabilityDictionary = learningPhase(trainFile, posInTrain)
 
+    # 1.5) SMOOTHING
+    smoothingVector = smoothing(posInTrain,3, devSetFile)
+    print(smoothingVector)
+
     # 2) DECODING (sul test set)
     viterbiPos = []
     for sentence in sentenceTest:
-        viterbiPos.append(viterbiAlgorithm(sentence, posInTrain, transitionProbabilityMatrix, emissionProbabilityDictionary))
+        viterbiPos.append(viterbiAlgorithm(sentence, posInTrain, transitionProbabilityMatrix, emissionProbabilityDictionary, smoothingVector))
         
     accuracyOnTest = accuracy(correctPos, viterbiPos)
     print(accuracyOnTest)
@@ -183,9 +255,9 @@ def main(lingua):
 
 #-------------------------------------------------------
 
-lingua= "Latino"
-#lingua="Greco"
-main(lingua)
+language= "Latino"
+#language="Greco"
+main(language)
 
 
 
