@@ -23,10 +23,18 @@ def findingAllPos(file):
 
 def tokenizeSentence(sentence):
     punctuations = '''!(){};:'"\,<>./?@#$%^&*_~·'''
-    for char in sentence:
-        if char in punctuations:
-            sentence = sentence.replace(char, ' ' + char)
-    return sentence.split()
+    tokenizedSentnce = ''
+
+    for index in range(0, len(sentence)):
+        if sentence[index] in punctuations:
+            if not (sentence[index] == '.' and sentence[index - 1] == '.'):
+                tokenizedSentnce += ' ' + sentence[index]
+            else:
+                tokenizedSentnce += sentence[index]
+        else:
+            tokenizedSentnce += sentence[index]
+
+    return tokenizedSentnce.split()
 
 # restituisce una matrice i cui valori sono convertiti in log
 def matrixToLogMatrix(matrix):

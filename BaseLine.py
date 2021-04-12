@@ -70,9 +70,11 @@ def simpleBaseLine(trainFileName, testFileName):
 
     return baseLinePos
 
-train_set_file = 'TreeBank - Latino/la_llct-ud-train.conllu'
-testSetFile = 'TreeBank - Latino/la_llct-ud-test.conllu'
-print(simpleBaseLine(train_set_file, testSetFile))
+#train_set_file = 'TreeBank - Latino/la_llct-ud-train.conllu'
+#testSetFile = 'TreeBank - Latino/la_llct-ud-test.conllu'
+trainSetFile = 'TreeBank - Greco/grc_perseus-ud-train.conllu'
+testSetFile = 'TreeBank - Greco/grc_perseus-ud-test.conllu'
+print(simpleBaseLine(trainSetFile, testSetFile))
 
 
 
