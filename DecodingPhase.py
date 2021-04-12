@@ -31,15 +31,14 @@ def viterbiAlgorithm(sentence, pos, transitionProbabilityMatrix, emissionProbabi
     bestPath[len(sentenceList) - 1] =  viterbi[:, -1].argmax() # last state
     for t in range(len(sentenceList)-1, 0, -1): # states of (last-1)th to 0th time step
         bestPath[t-1] = backpointer[int(bestPath[t]),t]
-
-    bestPos = []
-    for bp in bestPath:
-        bestPos.append(pos[int(bp)])
         
     # stampa della parola con il tag corrispondente
     #for index,w in enumerate(sentenceList):
         #if w in temp:
            # print(sentenceList[index], pos[int(bestPath[index])])
+    bestPos = []
+    for bp in bestPath:
+        bestPos.append(pos[int(bp)])
 
     return bestPos
 

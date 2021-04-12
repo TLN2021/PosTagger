@@ -1,10 +1,8 @@
 import numpy as np
 
 def learningPhase(file, pos):
-    transitionProbabilityMatrix = np.zeros(
-        (len(pos), len(pos)))  # matrice posXpos che contiene i conteggi delle coppie tagPrecedente-tagCorrente
-    countPos = np.zeros(len(
-        pos))  # vettore che contiene il conteggio dei pos del file dove l'indice corrisponde a quello del vettore "pos"
+    transitionProbabilityMatrix = np.zeros((len(pos), len(pos)))  # matrice posXpos che contiene i conteggi delle coppie tagPrecedente-tagCorrente
+    countPos = np.zeros(len(pos))  # vettore che contiene il conteggio dei pos del file dove l'indice corrisponde a quello del vettore "pos"
     previousPosIndex = -1
     emissionProbabilityDictionary = {}
 

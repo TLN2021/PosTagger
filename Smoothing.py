@@ -34,13 +34,10 @@ def statisticsOnDevSet(fileName, pos):
 def smoothing(pos, type, devFileName) :
     smoothingVector = np.zeros(len(pos))
     if type == 0:
-        for index,p in enumerate(pos) :
-            if p == "NOUN":
-                smoothingVector[index]=1
+        smoothingVector[np.where(pos == "NOUN")] = 1
     elif type == 1:
-        for index, p in enumerate(pos):
-            if p == "NOUN" or p == "VERB":
-                smoothingVector[index] = 0.5
+        smoothingVector[np.where(pos == "NOUN")] = 0.5
+        smoothingVector[np.where(pos == "VERB")] = 0.5
     elif type == 2:
         smoothingVector = np.ones(len(pos))*(1/len(pos))
     elif type == 3:
