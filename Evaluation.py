@@ -17,12 +17,9 @@ def getSencencePos(fileName):
                 analyze = True
             if 'text' in line:  # inizio di una nuova frase
                 sentenceIndex += 1
-                #print("prima",line)
                 sentences.append(line.replace('# text = ', '').replace('\n', ''))  # salva la frase
-               # print("dopo",sentences[sentenceIndex])
                 pos[sentenceIndex] = []  # inizializza l'array per i pos della frase
             if analyze is True:
-                print (line)
                 pos[sentenceIndex].append(wordsInLine[3])
 
     return sentences, list(pos.values())

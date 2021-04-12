@@ -35,6 +35,7 @@ def viterbiAlgorithm(sentence, pos, transitionProbabilityMatrix, emissionProbabi
     bestPos = []
     for bp in bestPath:
         bestPos.append(pos[int(bp)])
+        
     # stampa della parola con il tag corrispondente
     #for index,w in enumerate(sentenceList):
         #if w in temp:

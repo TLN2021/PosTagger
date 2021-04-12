@@ -22,7 +22,7 @@ def findingAllPos(file):
     return pos
 
 def tokenizeSentence(sentence):
-    punctuations = '''!(){};:'"\,<>./?@#$%^&*_~'''
+    punctuations = '''!(){};:'"\,<>./?@#$%^&*_~·'''
     for char in sentence:
         if char in punctuations:
             sentence = sentence.replace(char, ' ' + char)
