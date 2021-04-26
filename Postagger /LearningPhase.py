@@ -25,10 +25,10 @@ def learningPhase(file, pos):
                     if p in wordsInLine:
                         temporaryEmissionArray = np.zeros(len(pos))
                         temporaryEmissionArray[index] += 1
-                        if wordsInLine[1] in emissionProbabilityDictionary.keys():
-                            emissionProbabilityDictionary[wordsInLine[1]] += temporaryEmissionArray
+                        if wordsInLine[1].lower() in emissionProbabilityDictionary.keys():
+                            emissionProbabilityDictionary[wordsInLine[1].lower()] += temporaryEmissionArray
                         else:
-                            emissionProbabilityDictionary[wordsInLine[1]] = temporaryEmissionArray
+                            emissionProbabilityDictionary[wordsInLine[1].lower()] = temporaryEmissionArray
 
                         # controlliamo che stiamo analizzando una nuova frase
                         if (previousPosIndex >= 0):

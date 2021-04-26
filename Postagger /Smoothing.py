@@ -1,5 +1,7 @@
 import numpy as np
 
+# calcola la probabilità che un termine sconosciuto abbia un certo pos in base
+# all'analisi fatta sul dev-set file
 def statisticsOnDevSet(fileName, pos):
     with open(fileName, 'r', encoding='utf-8') as file:
         lines = file.readlines()
@@ -18,7 +20,7 @@ def statisticsOnDevSet(fileName, pos):
             # analizziamo la riga e segniamo l'occorrenza del pos
             if analyze is True:
                 if (wordsInLine != []):
-                    w = wordsInLine[1]
+                    w = wordsInLine[1].lower()
                     if w not in words.keys() and w not in deletedWords:
                         words[w] = wordsInLine[3]
                     elif w in words.keys():
@@ -30,21 +32,8 @@ def statisticsOnDevSet(fileName, pos):
 
         return statistics/len(words.keys())
 
-
-def smoothing(pos, type, devFileName) :
-    smoothingVector = np.zeros(len(pos))
-    if type == 0:
-        smoothingVector[np.where(pos == "NOUN")] = 1
-    elif type == 1:
-        smoothingVector[np.where(pos == "NOUN")] = 0.5
-        smoothingVector[np.where(pos == "VERB")] = 0.5
-    elif type == 2:
-        smoothingVector = np.ones(len(pos))*(1/len(pos))
-    elif type == 3:
-        smoothingVector = statisticsOnDevSet(devFileName, pos)
-    return smoothingVector
-
-
+# funzione per lo smoothing che fa uso di diverse metodologie per cercare
+# di migliorare i risultati
 def getUnknownTag(word, language, pos):
     posWord = np.zeros(len(pos))
     nounAdj = []
@@ -94,3 +83,16 @@ def getUnknownTag(word, language, pos):
 
     posWord[np.where(pos == "NOUN")] = 1
     return posWord
+
+def smoothing(pos, type, devFileName) :
+    smoothingVector = np.zeros(len(pos))
+    if type == 0:
+        smoothingVector[np.where(pos == "NOUN")] = 1
+    elif type == 1:
+        smoothingVector[np.where(pos == "NOUN")] = 0.5
+        smoothingVector[np.where(pos == "VERB")] = 0.5
+    elif type == 2:
+        smoothingVector = np.ones(len(pos))*(1/len(pos))
+    elif type == 3:
+        smoothingVector = statisticsOnDevSet(devFileName, pos)
+    return smoothingVector

@@ -23,6 +23,7 @@ def getSencencePos(fileName):
                 pos[sentenceIndex].append(wordsInLine[3])
     return sentences, list(pos.values())
 
+# restituisce l'accuracy confrontando il vettore target e quello prodotto
 def accuracy (target,target_test):
     accuracy=[]
     for index in range(len(target)):
