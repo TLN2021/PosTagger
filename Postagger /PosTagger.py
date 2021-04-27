@@ -23,7 +23,7 @@ def main(language):
         transitionProbabilityMatrix, emissionProbabilityDictionary = lp.learningPhase(trainFile, posInTrain)
 
     # 1.5) SMOOTHING
-    smoothingType = 2
+    smoothingType = 0
     smoothingVector = sm.smoothing(posInTrain, smoothingType, devSetFile)
 
     # 2) DECODING (sul test set)

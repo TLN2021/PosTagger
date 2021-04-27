@@ -57,28 +57,28 @@ def getUnknownTag(word, language, pos):
 
     for n in noun:
         if word.endswith(n):
-            posWord[np.where(pos == "NOUN")] = 1
+            posWord[pos.index("NOUN")] = 1
             return posWord
 
     for adv in adverb:
         if word.endswith(adv):
-            posWord[np.where(pos == "ADV")] = 1
+            posWord[pos.index("ADV")] = 1
             return posWord
 
     for na in nounAdj:
         if word.endswith(na):
-            posWord[np.where(pos == "NOUN")] = 0.5
-            posWord[np.where(pos == "ADJ")] = 0.5
+            posWord[pos.index("NOUN")] = 0.5
+            posWord[pos.index("ADJ")] = 0.5
             return posWord
 
     for a in adj:
         if word.endswith(a):
-            posWord[np.where(pos == "ADJ")] = 1
+            posWord[pos.index("ADJ")] = 1
             return posWord
 
     for v in verb:
         if word.endswith(v):
-            posWord[np.where(pos == "VERB")] = 1
+            posWord[pos.index("VERB")] = 1
             return posWord
 
     posWord[np.where(pos == "NOUN")] = 1
@@ -87,10 +87,10 @@ def getUnknownTag(word, language, pos):
 def smoothing(pos, type, devFileName) :
     smoothingVector = np.zeros(len(pos))
     if type == 0:
-        smoothingVector[np.where(pos == "NOUN")] = 1
+        smoothingVector[pos.index("NOUN")] = 1
     elif type == 1:
-        smoothingVector[np.where(pos == "NOUN")] = 0.5
-        smoothingVector[np.where(pos == "VERB")] = 0.5
+        smoothingVector[pos.index("NOUN")] = 0.5
+        smoothingVector[pos.index("VERB")] = 0.5
     elif type == 2:
         smoothingVector = np.ones(len(pos))*(1/len(pos))
     elif type == 3:
