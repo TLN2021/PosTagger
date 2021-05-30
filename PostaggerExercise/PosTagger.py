@@ -18,22 +18,24 @@ def main(language):
     sentenceTest, correctPos = ev.getSencencePos(testSetFile)
 
     # 1) LEARNING (sul training set)
+    print('Start Learning..')
     with open(trainSetFile, 'r', encoding='utf-8') as trainFile:
         posInTrain = utils.findingAllPos(trainFile)
         transitionProbabilityMatrix, emissionProbabilityDictionary = lp.learningPhase(trainFile, posInTrain)
 
     # 1.5) SMOOTHING
-    smoothingType = 0
+    smoothingType = 3
     smoothingVector = sm.smoothing(posInTrain, smoothingType, devSetFile)
 
     # 2) DECODING (sul test set)
+    print('Start Decoding..')
     viterbiPos = []
     for sentence in sentenceTest:
         viterbiPos.append(dp.viterbiAlgorithm(sentence, posInTrain, transitionProbabilityMatrix, emissionProbabilityDictionary, smoothingVector))
         #viterbiPos.append(dp.syntaxBasedDecoding(sentence, posInTrain, transitionProbabilityMatrix, emissionProbabilityDictionary, language))
 
     accuracyOnTest = ev.accuracy(correctPos, viterbiPos)
-    print(accuracyOnTest)
+    print('Accuracy con smoothing di tipo ',smoothingType,'sul ',language,' : ', accuracyOnTest)
 
 
 #-------------------------------------------------------
