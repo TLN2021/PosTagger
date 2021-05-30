@@ -12,11 +12,12 @@ def viterbiAlgorithm(sentence, pos, transitionProbabilityMatrix, emissionProbabi
 
     viterbi = np.ones((len(pos), len(sentenceList)))
     backpointer = np.zeros((len(pos), len(sentenceList)))
+    # considera il pos 'start'
     for index,p in enumerate(pos):
         if sentenceList[0].lower() in emissionProbabilityDictionary.keys():
-            viterbi[index, 0] = logTPM[0, index] + logEPD[sentenceList[0].lower()][index]
+            viterbi[index, 0] = logTPM[len(pos)-2, index] + logEPD[sentenceList[0].lower()][index]
         else:
-            viterbi[index, 0] = logTPM[0, index] + logSV[index]
+            viterbi[index, 0] = logTPM[len(pos)-2, index] + logSV[index]
             
     for t,word in enumerate(sentenceList):
         for s,p in enumerate(pos):
@@ -27,12 +28,16 @@ def viterbiAlgorithm(sentence, pos, transitionProbabilityMatrix, emissionProbabi
 
             backpointer[s, t] = np.argmax(viterbi[:, t - 1] + logTPM[:, s])
 
+    # considera il pos 'end'
+    viterbi[len(pos)-1, len(sentenceList)-1] = np.max(viterbi[:, len(sentenceList)-1] + logTPM[:, len(pos)-1] )
+    backpointer[len(pos)-1, len(sentenceList)-1] = np.argmax(viterbi[:,  len(sentenceList)-1] + logTPM[:, len(pos)-1])
+
     # calcolo del percorso migliore usando il backpointer
     bestPath = np.zeros(len(sentenceList))
     bestPath[len(sentenceList) - 1] =  viterbi[:, -1].argmax() # last state
     for t in range(len(sentenceList)-1, 0, -1): # states of (last-1)th to 0th time step
         bestPath[t-1] = backpointer[int(bestPath[t]),t]
-        
+
     # stampa della parola con il tag corrispondente
     #for index,w in enumerate(sentenceList):
         #if w in temp:
@@ -40,7 +45,6 @@ def viterbiAlgorithm(sentence, pos, transitionProbabilityMatrix, emissionProbabi
     bestPos = []
     for bp in bestPath:
         bestPos.append(pos[int(bp)])
-
     return bestPos
 
 # tipologia di decoding che utilizza come smothing u approccio basato sui suffissi di nomi, aggettivi e verbi in base alla lingua
@@ -52,12 +56,13 @@ def syntaxBasedDecoding(sentence, pos, transitionProbabilityMatrix, emissionProb
 
     viterbi = np.ones((len(pos), len(sentenceList)))
     backpointer = np.zeros((len(pos), len(sentenceList)))
+    # considera il pos 'start'
     for index, p in enumerate(pos):
         if sentenceList[0].lower() in emissionProbabilityDictionary.keys():
-            viterbi[index, 0] = logTPM[0, index] + logEPD[sentenceList[0].lower()][index]
+            viterbi[index, 0] = logTPM[len(pos)-2, index] + logEPD[sentenceList[0].lower()][index]
         else:
             temp = utils.matrixToLogMatrix(sm.getUnknownTag(sentenceList[0], language, pos))
-            viterbi[index, 0] = logTPM[0, index] + temp[index]
+            viterbi[index, 0] = logTPM[len(pos)-2, index] + temp[index]
     for t, word in enumerate(sentenceList):
         for s, p in enumerate(pos):
             if word.lower() in emissionProbabilityDictionary.keys():
@@ -67,6 +72,10 @@ def syntaxBasedDecoding(sentence, pos, transitionProbabilityMatrix, emissionProb
                 viterbi[s, t] = np.max(viterbi[:, t - 1] + logTPM[:, s] + temp[s])
 
             backpointer[s, t] = np.argmax(viterbi[:, t - 1] + logTPM[:, s])
+
+    # considera il pos 'end'
+    viterbi[len(pos) - 1, len(sentenceList) - 1] = np.max(viterbi[:, len(sentenceList) - 1] + logTPM[:, len(pos) - 1])
+    backpointer[len(pos) - 1, len(sentenceList) - 1] = np.argmax(viterbi[:, len(sentenceList) - 1] + logTPM[:, len(pos) - 1])
 
     # calcolo del percorso migliore usando il backpointer
     bestPath = np.zeros(len(sentenceList))

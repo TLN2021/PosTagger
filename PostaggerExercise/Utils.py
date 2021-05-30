@@ -19,6 +19,8 @@ def findingAllPos(file):
             if(wordsInLine != []):
                 if(wordsInLine[3] not in pos):
                     pos.append(wordsInLine[3])
+    pos.append('Start')
+    pos.append('End')
     return pos
 
 # funzione che suddivide la frase in termine conservando la punteggiatura
