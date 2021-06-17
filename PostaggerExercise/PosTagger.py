@@ -24,15 +24,22 @@ def main(language):
         transitionProbabilityMatrix, emissionProbabilityDictionary = lp.learningPhase(trainFile, posInTrain)
 
     # 1.5) SMOOTHING
-    smoothingType = 3
+    # Sussistono 4 modalità di smoothing + 1 (vd riga 42)
+    # smoothingType = 0: unknown -> NOUN
+    # smoothingType = 1: unknown -> NOUND/VERB
+    # smoothingType = 2: unknown -> distribution on pos
+    # smoothingType = 3: unknown -> distribution on dev set
+    smoothingType = 0
     smoothingVector = sm.smoothing(posInTrain, smoothingType, devSetFile)
 
     # 2) DECODING (sul test set)
     print('Start Decoding..')
     viterbiPos = []
     for sentence in sentenceTest:
-        viterbiPos.append(dp.viterbiAlgorithm(sentence, posInTrain, transitionProbabilityMatrix, emissionProbabilityDictionary, smoothingVector))
-        #viterbiPos.append(dp.syntaxBasedDecoding(sentence, posInTrain, transitionProbabilityMatrix, emissionProbabilityDictionary, language))
+        #viterbiPos.append(dp.viterbiAlgorithm(sentence, posInTrain, transitionProbabilityMatrix, emissionProbabilityDictionary, smoothingVector))
+        
+        # smoothingType implementato
+        viterbiPos.append(dp.syntaxBasedDecoding(sentence, posInTrain, transitionProbabilityMatrix, emissionProbabilityDictionary, language))
 
     accuracyOnTest = ev.accuracy(correctPos, viterbiPos)
     print('Accuracy con smoothing di tipo ',smoothingType,'sul ',language,' : ', accuracyOnTest)
