@@ -21,6 +21,7 @@ def findingAllPos(file):
                     pos.append(wordsInLine[3])
     return pos
 
+# restituisce la frase tokenizata
 def tokenizeSentence(sentence):
     punctuations = '''!(){};:'"\,<>./?@#$%^&*_~·'''
     tokenizedSentnce = ''

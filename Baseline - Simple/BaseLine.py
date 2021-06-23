@@ -1,8 +1,11 @@
 import numpy as np
 import Utils as utils
-import Smoothing as sm
 import Evaluation as ev
+import pandas as pd
+import time
 
+# fase di learning in cui si impara per ogni parola qual è il suo
+# tag più frequente che compare nel corpus
 def learningPhase(file, pos):
         mostFrequentTag = {}
 
@@ -34,6 +37,10 @@ def learningPhase(file, pos):
 
         return mostFrequentTag
 
+# fase di decoding a cui si assegna ad ogni parola del test set 
+# il tag più frequente "imparato" per quel termine nel passo precedente
+# nel caso in cui quella parola non compaia nel train set si assegna
+# automaticamente il pos 'NOUN'
 def decodingPhase(sentence, mostFrequentTag, smoothingVector):
     bestPos=[]
     sentenceList = utils.tokenizeSentence(sentence)
@@ -41,39 +48,44 @@ def decodingPhase(sentence, mostFrequentTag, smoothingVector):
         if word in mostFrequentTag.keys():
             bestPos.append(mostFrequentTag[word])
         else:
-            bestPos.append(np.max(smoothingVector))
+            bestPos.append('NOUN')
     return bestPos
 
 
-
+# main della baseline
 def simpleBaseLine(trainFileName, testFileName):
-
+    startTime = time.time()
     # 1) LEARNING (sul training set)
     with open(trainFileName, 'r', encoding='utf-8') as trainFile:
         posInTrain = utils.findingAllPos(trainFile)
         mostFrequentTag = learningPhase(trainFile, posInTrain)
 
-    with open(testFileName, 'r', encoding='utf-8') as testFile:
-        sentenceTest, correctPos = ev.getSencencePos(testFileName)
+    learningTime = time.time() - startTime
+    print("Learning time:", learningTime)
 
-    # 1.5) SMOOTHING
-    smoothingType = 0
-    smoothingVector = sm.smoothing(posInTrain, smoothingType, None)
+    decodingTimeStart = time.time()
+
+    with open(testFileName, 'r', encoding='utf-8'):
+        sentenceTest, correctPos = ev.getSencencePos(testFileName)
 
     # 2) DECODING (sul test set)
     baseLinePos = []
     for sentence in sentenceTest:
-        baseLinePos.append(decodingPhase(sentence, mostFrequentTag, smoothingVector))
+        baseLinePos.append(decodingPhase(sentence, mostFrequentTag, None))
 
-    accuracyOnTest = ev.accuracy(correctPos, baseLinePos)
-    print(accuracyOnTest)
+    decodingTime = time.time() - decodingTimeStart
+    print("Decoding time:", decodingTime)
+    
+    accuracyOnTest, errorVector = ev.accuracy(correctPos, baseLinePos)
+    print("Accuracy Baseline:", accuracyOnTest)
+    print("Errori più comuni:", pd.DataFrame(errorVector))
 
     return baseLinePos
 
-#train_set_file = 'TreeBank - Latino/la_llct-ud-train.conllu'
-#testSetFile = 'TreeBank - Latino/la_llct-ud-test.conllu'
-trainSetFile = 'TreeBank - Greco/grc_perseus-ud-train.conllu'
-testSetFile = 'TreeBank - Greco/grc_perseus-ud-test.conllu'
+trainSetFile = '../TreeBank - Latino/la_llct-ud-train.conllu'
+testSetFile = '../TreeBank - Latino/la_llct-ud-test.conllu'
+#trainSetFile = '../TreeBank - Greco/grc_perseus-ud-train.conllu'
+#testSetFile = '../TreeBank - Greco/grc_perseus-ud-test.conllu'
 simpleBaseLine(trainSetFile, testSetFile)
 
 
