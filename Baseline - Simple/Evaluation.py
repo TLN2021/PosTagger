@@ -34,13 +34,13 @@ def accuracy (target,target_test):
             if target[index][i] == target_test[index][i]:
                 accuracyTemp += 1
             else:
-                if target_test[index][i] not in errorPos.keys():
-                    errorPos[target_test[index][i]] = 0
+                if target[index][i] not in errorPos.keys():
+                    errorPos[target[index][i]] = 0
                 else:
-                    errorPos[target_test[index][i]] += 1
+                    errorPos[target[index][i]] += 1
         accuracy.append(accuracyTemp/len(target[index]))
         
-    # stampa degli errori ordinati per i più comuni dei pos
+    # memorizza gli errori ordinati per i più comuni dei pos
     errorVector = []
     for k, v in sorted(errorPos.items(), reverse=True, key=itemgetter(1)):
         errorVector.append(str(k) + " " + str(v))

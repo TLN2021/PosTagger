@@ -1,5 +1,4 @@
 import numpy as np
-from sklearn.metrics import accuracy_score
 from operator import itemgetter
 
 # restituisce le frasi nel treebank ed i relativi pos
@@ -24,7 +23,8 @@ def getSencencePos(fileName):
                 pos[sentenceIndex].append(wordsInLine[3])
     return sentences, list(pos.values())
 
-# restituisce l'accuracy confrontando il vettore target e quello prodotto
+# restituisce l'accuracy confrontando il vettore target e quello prodotto + 
+# la lista ordinata degli errori più frequenti
 def accuracy (target,target_test):
     accuracy=[]
     errorPos = {}
@@ -34,13 +34,15 @@ def accuracy (target,target_test):
             if target[index][i] == target_test[index][i]:
                 accuracyTemp += 1
             else:
-                if target_test[index][i] not in errorPos.keys():
-                    errorPos[target_test[index][i]] = 0
+                if target[index][i] not in errorPos.keys():
+                    errorPos[target[index][i]] = 0
                 else:
-                    errorPos[target_test[index][i]] += 1
+                    errorPos[target[index][i]] += 1
         accuracy.append(accuracyTemp/len(target[index]))
         
-    # stampa degli errori ordinati per ipiù comuni dei pos
+    # memorizza gli errori ordinati per i più comuni dei pos
+    errorVector = []
     for k, v in sorted(errorPos.items(), reverse=True, key=itemgetter(1)):
-        print(k, v)
-    return np.mean(accuracy)
+        errorVector.append(str(k) + " " + str(v))
+    
+    return np.mean(accuracy), errorVector

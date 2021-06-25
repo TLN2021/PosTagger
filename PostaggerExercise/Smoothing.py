@@ -84,6 +84,10 @@ def getUnknownTag(word, language, pos):
     posWord[np.where(pos == "NOUN")] = 1
     return posWord
 
+# smoothingType = 0: unknown -> NOUN
+# smoothingType = 1: unknown -> NOUND/VERB
+# smoothingType = 2: unknown -> distribution on pos
+# smoothingType = 3: unknown -> distribution on dev set
 def smoothing(pos, type, devFileName) :
     smoothingVector = np.zeros(len(pos))
     if type == 0:

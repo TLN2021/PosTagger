@@ -4,6 +4,8 @@ import Utils as utils
 import LearningPhase as lp
 import Smoothing as sm
 import DecodingPhase as dp
+import pandas as pd
+import time
 
 def main(language):
     if language == "Latino":
@@ -19,30 +21,40 @@ def main(language):
 
     # 1) LEARNING (sul training set)
     print('Start Learning..')
+    startTime = time.time()
     with open(trainSetFile, 'r', encoding='utf-8') as trainFile:
         posInTrain = utils.findingAllPos(trainFile)
         transitionProbabilityMatrix, emissionProbabilityDictionary = lp.learningPhase(trainFile, posInTrain)
 
+    learningTime = time.time() - startTime
+    print("Learning time:", learningTime)
+    
+    decodingTimeStart = time.time()
+    
     # 1.5) SMOOTHING
     # Sussistono 4 modalità di smoothing + 1 (vd riga 42)
     # smoothingType = 0: unknown -> NOUN
     # smoothingType = 1: unknown -> NOUND/VERB
     # smoothingType = 2: unknown -> distribution on pos
     # smoothingType = 3: unknown -> distribution on dev set
-    smoothingType = 0
+    smoothingType = 1
     smoothingVector = sm.smoothing(posInTrain, smoothingType, devSetFile)
 
     # 2) DECODING (sul test set)
     print('Start Decoding..')
     viterbiPos = []
     for sentence in sentenceTest:
-        #viterbiPos.append(dp.viterbiAlgorithm(sentence, posInTrain, transitionProbabilityMatrix, emissionProbabilityDictionary, smoothingVector))
+        viterbiPos.append(dp.viterbiAlgorithm(sentence, posInTrain, transitionProbabilityMatrix, emissionProbabilityDictionary, smoothingVector))
         
         # smoothingType implementato
-        viterbiPos.append(dp.syntaxBasedDecoding(sentence, posInTrain, transitionProbabilityMatrix, emissionProbabilityDictionary, language))
+        #viterbiPos.append(dp.syntaxBasedDecoding(sentence, posInTrain, transitionProbabilityMatrix, emissionProbabilityDictionary, language))
 
-    accuracyOnTest = ev.accuracy(correctPos, viterbiPos)
+    decodingTime = time.time() - decodingTimeStart
+    print("Decoding time:", decodingTime)
+    
+    accuracyOnTest, errorVector = ev.accuracy(correctPos, viterbiPos)
     print('Accuracy con smoothing di tipo ',smoothingType,'sul ',language,' : ', accuracyOnTest)
+    print("Errori più comuni:\n", pd.DataFrame(errorVector))
 
 
 #-------------------------------------------------------
