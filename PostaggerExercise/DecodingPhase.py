@@ -10,6 +10,7 @@ def viterbiAlgorithm(sentence, pos, transitionProbabilityMatrix, emissionProbabi
     logEPD = utils.dictToLogDict(emissionProbabilityDictionary)
     logSV = utils.matrixToLogMatrix(smoothingVector)
 
+    # fase di inizializzazione
     viterbi = np.ones((len(pos), len(sentenceList)))
     backpointer = np.zeros((len(pos), len(sentenceList)))
     # considera il pos 'start'
@@ -19,6 +20,7 @@ def viterbiAlgorithm(sentence, pos, transitionProbabilityMatrix, emissionProbabi
         else:
             viterbi[index, 0] = logTPM[len(pos)-2, index] + logSV[index]
             
+    # fase ricorsiva
     for t,word in enumerate(sentenceList):
         for s,p in enumerate(pos):
             if word.lower() in emissionProbabilityDictionary.keys():
@@ -28,6 +30,7 @@ def viterbiAlgorithm(sentence, pos, transitionProbabilityMatrix, emissionProbabi
 
             backpointer[s, t] = np.argmax(viterbi[:, t - 1] + logTPM[:, s])
 
+    # fase di terminazione
     # considera il pos 'end'
     viterbi[len(pos)-1, len(sentenceList)-1] = np.max(viterbi[:, len(sentenceList)-1] + logTPM[:, len(pos)-1] )
     backpointer[len(pos)-1, len(sentenceList)-1] = np.argmax(viterbi[:,  len(sentenceList)-1] + logTPM[:, len(pos)-1])
@@ -38,10 +41,7 @@ def viterbiAlgorithm(sentence, pos, transitionProbabilityMatrix, emissionProbabi
     for t in range(len(sentenceList)-1, 0, -1): # states of (last-1)th to 0th time step
         bestPath[t-1] = backpointer[int(bestPath[t]),t]
 
-    # stampa della parola con il tag corrispondente
-    #for index,w in enumerate(sentenceList):
-        #if w in temp:
-           # print(sentenceList[index], pos[int(bestPath[index])])
+    # ritrovamento dei pos in base all'indice
     bestPos = []
     for bp in bestPath:
         bestPos.append(pos[int(bp)])

@@ -37,7 +37,7 @@ def main(language):
     # smoothingType = 1: unknown -> NOUND/VERB
     # smoothingType = 2: unknown -> distribution on pos
     # smoothingType = 3: unknown -> distribution on dev set
-    smoothingType = 1
+    smoothingType = 3
     smoothingVector = sm.smoothing(posInTrain, smoothingType, devSetFile)
 
     # 2) DECODING (sul test set)
@@ -59,8 +59,8 @@ def main(language):
 
 #-------------------------------------------------------
 
-language = "Latino"
-#language = "Greco"
+#language = "Latino"
+language = "Greco"
 main(language)
 
 

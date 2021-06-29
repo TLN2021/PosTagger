@@ -82,10 +82,10 @@ def simpleBaseLine(trainFileName, testFileName):
 
     return baseLinePos
 
-trainSetFile = '../TreeBank - Latino/la_llct-ud-train.conllu'
-testSetFile = '../TreeBank - Latino/la_llct-ud-test.conllu'
-#trainSetFile = '../TreeBank - Greco/grc_perseus-ud-train.conllu'
-#testSetFile = '../TreeBank - Greco/grc_perseus-ud-test.conllu'
+#trainSetFile = '../TreeBank - Latino/la_llct-ud-train.conllu'
+#testSetFile = '../TreeBank - Latino/la_llct-ud-test.conllu'
+trainSetFile = '../TreeBank - Greco/grc_perseus-ud-train.conllu'
+testSetFile = '../TreeBank - Greco/grc_perseus-ud-test.conllu'
 simpleBaseLine(trainSetFile, testSetFile)
 
 
